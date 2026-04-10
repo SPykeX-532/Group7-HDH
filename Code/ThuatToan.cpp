@@ -40,6 +40,22 @@ void PrintResult(vector<int>& allocation, vector<int> ProcessSize, vector<int> B
     }
 }
 
+vector<int> FirstFit(vector<int> blockSize, vector<int> processSize) {
+    vector<int> allocation(processSize.size(), -1);
+
+    for (int i = 0; i < processSize.size(); i++) {
+        for (int j = 0; j < blockSize.size(); j++) {
+            if (blockSize[j] >= processSize[i]) {
+                allocation[i] = j;
+                blockSize[j] -= processSize[i];
+                break;
+            }
+        }
+    }
+
+    return allocation;
+}
+
 vector<int> BestFit(vector<int> BlockSize, vector<int> ProcessSize) {
     vector<int> allocation(ProcessSize.size(), -1);
 
@@ -126,6 +142,16 @@ int main(int argc, char* argv[]) {
         cout << i + 1 << "                        " << ProcessSize[i] << "                             " << BlockSize[i] << endl;
     }
     cout << "Marker" << endl;
+
+    //FirstFit
+    if (ff) {
+        auto Start = high_resolution_clock::now();
+        Allocation = FirstFit(BlockSize, ProcessSize);
+        auto End = high_resolution_clock::now();
+        cout << ">>====================-----FIRST FIT-----====================<<" << endl;
+        PrintResult(Allocation, ProcessSize, BlockSize);
+        cout << "Time: " << duration_cast<microseconds>(End - Start).count() << " microseconds" << endl;
+    }
 
     //BestFit
     if (bf) {
