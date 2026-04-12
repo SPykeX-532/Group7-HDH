@@ -9,7 +9,7 @@
 using namespace std;
 using namespace std::chrono;
 
-void ReadCSV(string file_path,vector<int>& BlockSize, vector<int>& ProcessSize) {
+void ReadCSV(string file_path, vector<int>& BlockSize, vector<int>& ProcessSize) {
     ifstream file(file_path);
     if (!file) {
         cout << "Không thể mở file!" << endl;
@@ -17,10 +17,10 @@ void ReadCSV(string file_path,vector<int>& BlockSize, vector<int>& ProcessSize) 
     }
 
     string Block, Process;
-    getline(file, Block); 
+    getline(file, Block);
 
     while (file >> Block >> Process) {
-        BlockSize.push_back(stoi(Block));       
+        BlockSize.push_back(stoi(Block));
         ProcessSize.push_back(stoi(Process));
     }
 
@@ -38,6 +38,29 @@ void PrintResult(vector<int>& allocation, vector<int> ProcessSize, vector<int> B
         }
         cout << endl;
     }
+}
+
+void ExportCSV(string filename, string algoName, long long times, vector<int>& allocation, vector<int>& ProcessSize, vector<int>& BlockSize) {
+
+    ofstream out(filename, ios::app);
+
+    if (out.tellp() == 0) {
+        out << "Algorithm;Process;ProcessSize;Block;BlockSize\n";
+    }
+
+    for (int i = 0; i < allocation.size(); i++) {
+        out << algoName << ";" << i + 1 << ";" << ProcessSize[i] << ";";
+        if (allocation[i] != -1) {
+            out << allocation[i] + 1 << ";" << BlockSize[allocation[i]];
+        }
+        else {
+            out << "Not Allocated;0";
+        }
+        out << "\n";
+    }
+
+    out << "Time: " << times << " us" << endl;
+    out.close();
 }
 
 vector<int> FirstFit(vector<int> blockSize, vector<int> processSize) {
@@ -107,15 +130,15 @@ vector<int> WorstFit(vector<int> BlockSize, vector<int> ProcessSize) {
         int index = top.second;
 
         if (largest >= ProcessSize[i]) {
-            allocation[i] = index;  
+            allocation[i] = index;
 
             int remain = largest - ProcessSize[i];
             if (remain > 0) {
-                heap.push({ remain, index }); 
+                heap.push({ remain, index });
             }
         }
         else {
-            heap.push(top); 
+            heap.push(top);
             allocation[i] = -1;
         }
     }
@@ -145,34 +168,52 @@ int main(int argc, char* argv[]) {
 
     //FirstFit
     if (ff) {
+        //Chạy thuật toán
         auto Start = high_resolution_clock::now();
         Allocation = FirstFit(BlockSize, ProcessSize);
         auto End = high_resolution_clock::now();
+
+        //In ra
         cout << ">>====================-----FIRST FIT-----====================<<" << endl;
         PrintResult(Allocation, ProcessSize, BlockSize);
-        cout << "Time: " << duration_cast<microseconds>(End - Start).count() << " microseconds" << endl;
+        cout << "Time: " << duration_cast<microseconds>(End - Start).count() << " us" << endl;
+
+        //Ghi ra file
+        ExportCSV("Output.csv", "FirstFit", duration_cast<microseconds>(End - Start).count(), Allocation, ProcessSize, BlockSize);
     }
 
     //BestFit
     if (bf) {
+        //Chạy thuật toán
         auto Start = high_resolution_clock::now();
         Allocation = BestFit(BlockSize, ProcessSize);
         auto End = high_resolution_clock::now();
+
+        //In ra
         cout << ">>====================-----BEST FIT-----=====================<<" << endl;
         PrintResult(Allocation, ProcessSize, BlockSize);
-        cout << "Time: " << duration_cast<microseconds>(End - Start).count() << " microseconds" << endl;
+        cout << "Time: " << duration_cast<microseconds>(End - Start).count() << " us" << endl;
+
+        //Ghi ra file
+        ExportCSV("Output.csv", "BestFit", duration_cast<microseconds>(End - Start).count(), Allocation, ProcessSize, BlockSize);
     }
-    
+
     //WorstFit
     if (wf) {
+        //Chạy thuật toán
         auto Start = high_resolution_clock::now();
         Allocation = WorstFit(BlockSize, ProcessSize);
         auto End = high_resolution_clock::now();
+
+        //In ra
         cout << ">>====================-----WORST FIT-----====================<<" << endl;
         PrintResult(Allocation, ProcessSize, BlockSize);
-        cout << "Time: " << duration_cast<microseconds>(End - Start).count() << " microseconds" << endl;
+        cout << "Time: " << duration_cast<microseconds>(End - Start).count() << " us" << endl;
+
+        //Ghi ra file
+        ExportCSV("Output.csv", "WorstFit", duration_cast<microseconds>(End - Start).count(), Allocation, ProcessSize, BlockSize);
     }
-    
+
     return 0;
 }
 
