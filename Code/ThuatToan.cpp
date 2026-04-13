@@ -27,20 +27,42 @@ void ReadCSV(string file_path, vector<int>& BlockSize, vector<int>& ProcessSize)
     file.close();
 }
 
-void PrintResult(vector<int>& allocation, vector<int> ProcessSize, vector<int> BlockSize) {
-    for (int i = 0; i < allocation.size(); i++) {
-        cout << "Process " << i + 1 << " (Size=" << ProcessSize[i] << ")   --->   ";
-        if (allocation[i] != -1) {
-            cout << "Block " << allocation[i] + 1 << " (Size=" << BlockSize[allocation[i]] << ")";
+void PrintResult(vector<int>& allocation, vector<int> ProcessSize, vector<int> BlockSize, float& FragmentationRatio) {
+    vector<vector<int>> blockMap(BlockSize.size());
+    vector<int> NotAllocated;
+    float totalFreeSize = 0;
+    float max = 0;
+    for (int i = 0; i < ProcessSize.size(); i++) { 
+        if (allocation[i] != -1) { 
+            int b = allocation[i]; 
+            blockMap[b].push_back(i+1); 
         }
         else {
-            cout << "Not Allocated";
+            NotAllocated.push_back(i+1);
         }
-        cout << endl;
+    } 
+    for (int i = 0; i < blockMap.size(); i++) {
+        int free = BlockSize[i];
+        cout << "Block " << i + 1 << " (Size = " << free << "): ";
+        for (auto& p : blockMap[i]) { 
+            cout << "[P" << p << ": " << ProcessSize[p - 1] << "]";
+            free -= ProcessSize[p - 1];
+        }
+        if (free > max) max = free;
+        if (free > 0) cout << "[Free: " << free << "]\n";
+        else cout << endl;
+        totalFreeSize += free;
     }
+    cout << "Not Allocated: ";
+    for (int i = 0; i < NotAllocated.size(); i++) {
+        cout << "[P" << NotAllocated[i] << ": " << ProcessSize[NotAllocated[i] - 1] << "]";
+    }
+    if (totalFreeSize > 0) FragmentationRatio = (1 - max / totalFreeSize) * 100;
+    else FragmentationRatio = 0;
+    cout << "\nFragmentation Ratio: " << FragmentationRatio << "%" << endl;
 }
 
-void ExportCSV(string filename, string algoName, long long times, vector<int>& allocation, vector<int>& ProcessSize, vector<int>& BlockSize) {
+void ExportCSV(string filename, string algoName, vector<int>& allocation, vector<int>& ProcessSize, vector<int>& BlockSize, long long times, float FragmentationRatio) {
 
     ofstream out(filename, ios::app);
 
@@ -60,6 +82,7 @@ void ExportCSV(string filename, string algoName, long long times, vector<int>& a
     }
 
     out << "Time: " << times << " us" << endl;
+    out << "Fragmentation Ratio: " << FragmentationRatio << endl;
     out.close();
 }
 
@@ -154,6 +177,7 @@ int main(int argc, char* argv[]) {
 
     //Biến dùng xử lí
     vector<int> BlockSize, ProcessSize, Allocation;
+    float FragmentationRatio;
 
     //Đọc file CSV
     ReadCSV(file_path, BlockSize, ProcessSize);
@@ -175,11 +199,11 @@ int main(int argc, char* argv[]) {
 
         //In ra
         cout << ">>====================-----FIRST FIT-----====================<<" << endl;
-        PrintResult(Allocation, ProcessSize, BlockSize);
+        PrintResult(Allocation, ProcessSize, BlockSize, FragmentationRatio);
         cout << "Time: " << duration_cast<microseconds>(End - Start).count() << " us" << endl;
 
         //Ghi ra file
-        ExportCSV("Output.csv", "FirstFit", duration_cast<microseconds>(End - Start).count(), Allocation, ProcessSize, BlockSize);
+        ExportCSV("Output.csv", "FirstFit", Allocation, ProcessSize, BlockSize, duration_cast<microseconds>(End - Start).count(), FragmentationRatio);
     }
 
     //BestFit
@@ -191,11 +215,11 @@ int main(int argc, char* argv[]) {
 
         //In ra
         cout << ">>====================-----BEST FIT-----=====================<<" << endl;
-        PrintResult(Allocation, ProcessSize, BlockSize);
+        PrintResult(Allocation, ProcessSize, BlockSize, FragmentationRatio);
         cout << "Time: " << duration_cast<microseconds>(End - Start).count() << " us" << endl;
 
         //Ghi ra file
-        ExportCSV("Output.csv", "BestFit", duration_cast<microseconds>(End - Start).count(), Allocation, ProcessSize, BlockSize);
+        ExportCSV("Output.csv", "BestFit", Allocation, ProcessSize, BlockSize, duration_cast<microseconds>(End - Start).count(), FragmentationRatio);
     }
 
     //WorstFit
@@ -207,11 +231,11 @@ int main(int argc, char* argv[]) {
 
         //In ra
         cout << ">>====================-----WORST FIT-----====================<<" << endl;
-        PrintResult(Allocation, ProcessSize, BlockSize);
+        PrintResult(Allocation, ProcessSize, BlockSize, FragmentationRatio);
         cout << "Time: " << duration_cast<microseconds>(End - Start).count() << " us" << endl;
 
         //Ghi ra file
-        ExportCSV("Output.csv", "WorstFit", duration_cast<microseconds>(End - Start).count(), Allocation, ProcessSize, BlockSize);
+        ExportCSV("Output.csv", "WorstFit", Allocation, ProcessSize, BlockSize, duration_cast<microseconds>(End - Start).count(), FragmentationRatio);
     }
 
     return 0;
