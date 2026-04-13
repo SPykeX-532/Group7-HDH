@@ -16,12 +16,12 @@ void ReadCSV(string file_path, vector<int>& BlockSize, vector<int>& ProcessSize)
         return;
     }
 
-    string Block, Process;
-    getline(file, Block);
+    string block, process;
+    getline(file, block);
 
-    while (file >> Block >> Process) {
-        BlockSize.push_back(stoi(Block));
-        ProcessSize.push_back(stoi(Process));
+    while (getline(file, block, ';') && getline(file, process)) {
+        BlockSize.push_back(stoi(block));
+        ProcessSize.push_back(stoi(process));
     }
 
     file.close();
