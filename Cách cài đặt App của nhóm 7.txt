@@ -1,0 +1,19 @@
+Các Bước Cài Đặt Và Sử Dụng App:
+
+- Bước 1: Tải và chuẩn bị những file ThuatToan.cpp, Main.ipynb, InputData.csv, backgroundapp.qrc, backgroundapp_rc.py
+*Note: File InputData.csv có thể khác bậc nhưng các file còn lại phải nằm cùng bậc
+
+- Bước 2: Ở ThuatToan.cpp thực hiện build thành ThuatToan.exe và bỏ cùng bậc với các file ở bước 1
+
+- Bước 3: Ở Main.ipynb chạy lệnh !pip install PyQt5 nếu chưa có thư viện
+
+- Bước 4: Ở Main.ipynb chọn chạy đoạn code ở cell 3 (code chính) 
+
+- Bước 5: Ở GUI chọn nút Duyệt và chọn file InputData.csv
+
+- Bước 6: Chọn những thuật toán muốn chạy (Có thể chọn nhiều hơn 1 thuật toán)
+
+- Bước 7: Ấn nút chạy để thực hiện in ra dữ liệu đọc được từ file và kết quả xử lí thuật toán, đồng thời tạo ra file ouput.csv để ghi kết quả ra file
+
+
+
