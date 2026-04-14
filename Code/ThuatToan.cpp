@@ -16,14 +16,29 @@ void ReadCSV(string file_path, vector<int>& BlockSize, vector<int>& ProcessSize)
         return;
     }
 
-    string block, process;
-    getline(file, block);
+    string header, block, process;
+    getline(file, header);
 
-    while (getline(file, block, ';') && getline(file, process)) {
-        BlockSize.push_back(stoi(block));
-        ProcessSize.push_back(stoi(process));
+    while (true) {
+        bool has_block = (bool)getline(file, block, ';');
+        bool has_process = (bool)getline(file, process);
+
+        if (!has_block && !has_process) break;
+
+        if (has_block) {
+            try {
+                BlockSize.push_back(stoi(block));
+            }
+            catch (...) {}
+        }
+
+        if (has_process) {
+            try {
+                ProcessSize.push_back(stoi(process));
+            }
+            catch (...) {}
+        }
     }
-
     file.close();
 }
 
@@ -32,19 +47,19 @@ void PrintResult(vector<int>& allocation, vector<int> ProcessSize, vector<int> B
     vector<int> NotAllocated;
     float totalFreeSize = 0;
     float max = 0;
-    for (int i = 0; i < ProcessSize.size(); i++) { 
-        if (allocation[i] != -1) { 
-            int b = allocation[i]; 
-            blockMap[b].push_back(i+1); 
+    for (int i = 0; i < ProcessSize.size(); i++) {
+        if (allocation[i] != -1) {
+            int b = allocation[i];
+            blockMap[b].push_back(i + 1);
         }
         else {
-            NotAllocated.push_back(i+1);
+            NotAllocated.push_back(i + 1);
         }
-    } 
+    }
     for (int i = 0; i < blockMap.size(); i++) {
         int free = BlockSize[i];
         cout << "Block " << i + 1 << " (Size = " << free << "): ";
-        for (auto& p : blockMap[i]) { 
+        for (auto& p : blockMap[i]) {
             cout << "[P" << p << ": " << ProcessSize[p - 1] << "]";
             free -= ProcessSize[p - 1];
         }
@@ -178,15 +193,27 @@ int main(int argc, char* argv[]) {
     //Biến dùng xử lí
     vector<int> BlockSize, ProcessSize, Allocation;
     float FragmentationRatio;
+    int maxSize;
 
     //Đọc file CSV
     ReadCSV(file_path, BlockSize, ProcessSize);
+    maxSize = (BlockSize.size() > ProcessSize.size()) ? BlockSize.size() : ProcessSize.size();
 
     //In dữ liệu từ CSV
     cout << ">>====================-----INPUT DATA-----====================<<" << endl;
     cout << "#                    Process Size                    Block Size" << endl;
-    for (int i = 0; i < BlockSize.size(); i++) {
-        cout << i + 1 << "                        " << ProcessSize[i] << "                             " << BlockSize[i] << endl;
+    for (int i = 0; i < maxSize; i++) {
+        cout << i + 1 << "                        ";
+        if (i < ProcessSize.size()) {
+            cout << ProcessSize[i];
+        }
+        else cout << "000";
+        cout << "                             ";
+        if (i < BlockSize.size()) {
+            cout << BlockSize[i];
+        }
+        else cout << "000";
+        cout << endl;
     }
     cout << "Marker" << endl;
 
